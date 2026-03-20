@@ -84,3 +84,19 @@ function resetarContador() {
         alert('Contador resetado!');
     }
 }
+
+function definirProximoId() {
+    const novoId = prompt('Digite o próximo ID desejado:');
+
+    if (novoId === null) return;
+
+    const numero = parseInt(novoId);
+
+    if (isNaN(numero) || numero <= 0) {
+        alert('Digite um número válido!');
+        return;
+    }
+
+    localStorage.setItem('id', numero - 1);
+    alert(`Próximo ID será ${numero}`);
+}
