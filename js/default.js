@@ -31,30 +31,52 @@ function gerarPDF() {
 
     // SERVIÇO
     doc.setFontSize(12);
-    doc.text('DADOS DO SERVIÇO', 20, 40);
+    doc.setFont(undefined, 'bold');
+    doc.text('DADOS DO SERVIÇO', 20, 45);
+
+    doc.line(20, 50, 190, 50);
 
     doc.setFontSize(11);
-    doc.text(`Modelo: ${modelo}`, 20, 50);
-    doc.text(`Codigo: ${codigo}`, 20, 60);
-    doc.text(`Setor: ${setor}`, 20, 70);
+
+    //Posições
+    const xRotulo = 20;
+    const xValor = 40;
+    doc.setFont(undefined, 'bold');
+    doc.text('Modelo:', xRotulo, 60);
+    doc.setFont(undefined, 'normal');
+    doc.text(modelo, xValor, 60);
+
+    doc.setFont(undefined, 'bold');
+    doc.text('Codigo:', xRotulo, 70);
+    doc.setFont(undefined, 'normal');
+    doc.text(codigo, xValor, 70);
+
+    doc.setFont(undefined, 'bold');
+    doc.text('Setor:', xRotulo, 80);
+    doc.setFont(undefined, 'normal');
+    doc.text(setor, xValor, 80);
 
     // LINHA
-    doc.line(20, 80, 190, 80);
+    doc.line(20, 90, 190, 90);
 
     // TÍTULO
     doc.setFontSize(12);
-    doc.text('DESCRIÇÃO', 20, 90);
+    doc.setFont(undefined, 'bold');
+    doc.text('DESCRIÇÃO', 20, 105);
 
-    doc.line(20, 95, 190, 95);
+    doc.line(20, 110, 190, 110);
 
     doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
 
     // AÇÃO
-    const yAcao = 105;
+    doc.setFont(undefined, 'bold');
+    const yAcao = 120;
     doc.text(acao, 20, yAcao);
+    doc.setFont(undefined, 'normal');
 
     // DESCRIÇÃO (multilinha)
-    const yDescricao = 115;
+    const yDescricao = 130;
     const linhasDesc = doc.splitTextToSize(desc, 120);
     doc.text(linhasDesc, 20, yDescricao);
 
