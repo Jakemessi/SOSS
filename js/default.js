@@ -108,7 +108,7 @@ function resetarContador() {
 }
 
 function definirProximoId() {
-    const novoId = prompt('Digite o próximo ID desejado:');
+    const novoId = prompt('Digite o número da OS atual:');
 
     if (novoId === null) return;
 
@@ -120,5 +120,5 @@ function definirProximoId() {
     }
 
     localStorage.setItem('id', numero - 1);
-    alert(`Próximo ID será ${numero}`);
+    alert(`O número da OS será ${numero}`);
 }
