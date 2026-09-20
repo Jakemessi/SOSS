@@ -14,7 +14,7 @@ O SOSS funciona diretamente no navegador e foi preparado para utilização offli
 - Criação de páginas adicionais quando necessário.
 - Cabeçalho e rodapé em todas as páginas.
 - Funcionamento sem conexão com a internet.
-- Exportação e importação de backup da numeração.
+- Exportação e importação de backup da numeração e do histórico.
 - Registro local das Ordens de Serviço geradas.
 
 ## Como executar
@@ -57,17 +57,19 @@ Cada Ordem de Serviço gerada é registrada no navegador com número, data, mode
 
 A tabela apresenta as ordens já registradas e impede a criação de outro documento com o mesmo número.
 
-O histórico permanece somente neste navegador. Nesta versão, ele ainda não está incluído no arquivo de backup.
+O histórico permanece neste navegador e também é incluído nos arquivos de backup exportados pelo SOSS.
 
-## Backup da numeração
+## Backup dos dados locais
 
-O botão **Exportar backup** cria um arquivo JSON contendo o último número utilizado pelo SOSS.
+O botão **Exportar backup** cria um arquivo JSON contendo o último número utilizado e todo o histórico local das Ordens de Serviço.
 
-O botão **Importar backup** restaura essa numeração em outro navegador, em outro computador ou após uma perda dos dados locais.
+O botão **Importar backup** restaura a numeração e o histórico em outro navegador, em outro computador ou após uma perda dos dados locais.
+
+Backups antigos da versão 1 continuam aceitos, mas restauram somente a numeração e mantêm o histórico atual.
 
 Guarde o arquivo de backup em um local seguro e faça uma nova exportação periodicamente.
 
-O backup atual protege somente a numeração. Os PDFs gerados devem ser armazenados e copiados separadamente.
+Os PDFs gerados não ficam dentro do backup e devem ser armazenados e copiados separadamente.
 
 ## Cuidados importantes
 

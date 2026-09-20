@@ -542,9 +542,10 @@ function criarNomeArquivoBackup() {
 function exportarBackup() {
     const backup = {
         aplicacao: 'SOSS',
-        versao: 1,
+        versao: 2,
         exportadoEm: obterDataHoraLocalISO(),
-        ultimoNumero: obterUltimoNumero()
+        ultimoNumero: obterUltimoNumero(),
+        historico: obterHistorico()
     };
 
     const conteudo = JSON.stringify(backup, null, 4);
@@ -577,14 +578,28 @@ function selecionarBackup() {
 }
 
 function validarBackup(backup) {
-    return (
+    const dadosBasicosValidos =
         backup !== null &&
         typeof backup === 'object' &&
         backup.aplicacao === 'SOSS' &&
-        backup.versao === 1 &&
         Number.isSafeInteger(backup.ultimoNumero) &&
-        backup.ultimoNumero >= 0
-    );
+        backup.ultimoNumero >= 0;
+
+    if (!dadosBasicosValidos) {
+        return false;
+    }
+
+    // Compatibilidade com os backups antigos,
+    // que armazenavam somente a numeração.
+    if (backup.versao === 1) {
+        return true;
+    }
+
+    if (backup.versao !== 2 || !Array.isArray(backup.historico)) {
+        return false;
+    }
+
+    return backup.historico.every(validarRegistroOrdem);
 }
 
 async function importarBackup(evento) {
@@ -603,11 +618,30 @@ async function importarBackup(evento) {
         }
 
         const ultimoNumeroAtual = obterUltimoNumero();
+        const historicoAtual = obterHistorico();
+        const possuiHistorico = backup.versao === 2;
         const proximoNumeroBackup = backup.ultimoNumero + 1;
 
         let mensagem =
             `O backup possui como última OS a Nº ${backup.ultimoNumero}.\n` +
             `Após a importação, a próxima será a Nº ${proximoNumeroBackup}.\n\n`;
+
+        if (possuiHistorico) {
+            const quantidadeBackup = backup.historico.length;
+            const quantidadeAtual = historicoAtual.length;
+
+            mensagem +=
+                `O backup contém ${quantidadeBackup} ` +
+                `${quantidadeBackup === 1 ? 'ordem' : 'ordens'} no histórico.\n`;
+
+            mensagem +=
+                `O histórico atual possui ${quantidadeAtual} ` +
+                `${quantidadeAtual === 1 ? 'ordem' : 'ordens'} e será substituído.\n\n`;
+        } else {
+            mensagem +=
+                'Este é um backup antigo sem histórico.\n' +
+                'O histórico atual será mantido.\n\n';
+        }
 
         if (backup.ultimoNumero < ultimoNumeroAtual) {
             mensagem +=
@@ -621,11 +655,43 @@ async function importarBackup(evento) {
             return;
         }
 
-        salvarUltimoNumero(backup.ultimoNumero);
+        const contadorAnterior = ultimoNumeroAtual;
+        const historicoAnterior = historicoAtual;
+
+        try {
+            if (possuiHistorico) {
+                salvarHistorico(backup.historico);
+            }
+
+            salvarUltimoNumero(backup.ultimoNumero);
+        } catch (erroGravacao) {
+            try {
+                salvarUltimoNumero(contadorAnterior);
+
+                if (possuiHistorico) {
+                    salvarHistorico(historicoAnterior);
+                }
+            } catch (erroRestauracao) {
+                console.error(
+                    'Erro ao restaurar estado anterior:',
+                    erroRestauracao
+                );
+            }
+
+            throw erroGravacao;
+        }
+
         atualizarIndicadorProximaOS();
+        atualizarHistorico();
+
+        const resultadoHistorico = possuiHistorico
+            ? `${backup.historico.length} ` +
+              `${backup.historico.length === 1 ? 'ordem restaurada' : 'ordens restauradas'}`
+            : 'histórico atual mantido';
 
         alert(
             `Backup importado com sucesso!\n` +
+            `${resultadoHistorico}.\n` +
             `A próxima Ordem de Serviço será a Nº ${proximoNumeroBackup}.`
         );
     } catch (erro) {
