@@ -122,6 +122,21 @@ function criarCelula(texto) {
     return celula;
 }
 
+function criarBotaoReemissao(ordem) {
+    const botao = document.createElement('button');
+
+    botao.type = 'button';
+    botao.className = 'botao-secundario';
+    botao.textContent = 'Baixar PDF';
+    botao.title = `Baixar novamente a OS Nº ${ordem.numero}`;
+
+    botao.addEventListener('click', () => {
+        gerarPDF(ordem);
+    });
+
+    return botao;
+}
+
 function atualizarHistorico() {
     const historico = obterHistorico()
         .sort((ordemA, ordemB) => ordemB.numero - ordemA.numero);
@@ -148,12 +163,16 @@ function atualizarHistorico() {
     historico.forEach((ordem) => {
         const linha = document.createElement('tr');
 
+        const celulaAcoes = document.createElement('td');
+        celulaAcoes.appendChild(criarBotaoReemissao(ordem));
+
         linha.append(
             criarCelula(ordem.numero),
             criarCelula(formatarData(ordem.data)),
             criarCelula(ordem.modelo),
             criarCelula(ordem.codigo),
-            criarCelula(ordem.setor)
+            criarCelula(ordem.setor),
+            celulaAcoes
         );
 
         linhas.appendChild(linha);
@@ -302,28 +321,53 @@ function adicionarRodapes(doc) {
     doc.setTextColor(0);
 }
 
-function gerarPDF() {
-    const modelo = document.getElementById('modelo').value.trim();
-    const codigo = document.getElementById('codigo').value.trim();
-    const setor = document.getElementById('setor').value.trim();
-    const data = document.getElementById('data').value;
-    const acao = document.getElementById('acao').value.trim();
-    const desc = document.getElementById('desc').value.trim();
+function gerarPDF(ordemExistente = null) {
+    const reemissao = ordemExistente !== null;
 
-    if (!modelo || !codigo || !setor || !data || !acao || !desc) {
-        alert('Preencha todos os campos!');
-        return;
-    }
+    let modelo;
+    let codigo;
+    let setor;
+    let data;
+    let acao;
+    let desc;
+    let id;
 
-    const id = obterUltimoNumero() + 1;
+    if (reemissao) {
+        if (!validarRegistroOrdem(ordemExistente)) {
+            alert('Não foi possível gerar novamente esta Ordem de Serviço.');
+            return;
+        }
 
-    if (numeroJaRegistrado(id)) {
-        alert(
-            `A Ordem de Serviço Nº ${id} já existe no histórico.\n\n` +
-            'Defina outro número antes de gerar o PDF.'
-        );
+        modelo = ordemExistente.modelo;
+        codigo = ordemExistente.codigo;
+        setor = ordemExistente.setor;
+        data = ordemExistente.data;
+        acao = ordemExistente.resumo;
+        desc = ordemExistente.descricao;
+        id = ordemExistente.numero;
+    } else {
+        modelo = document.getElementById('modelo').value.trim();
+        codigo = document.getElementById('codigo').value.trim();
+        setor = document.getElementById('setor').value.trim();
+        data = document.getElementById('data').value;
+        acao = document.getElementById('acao').value.trim();
+        desc = document.getElementById('desc').value.trim();
 
-        return;
+        if (!modelo || !codigo || !setor || !data || !acao || !desc) {
+            alert('Preencha todos os campos!');
+            return;
+        }
+
+        id = obterUltimoNumero() + 1;
+
+        if (numeroJaRegistrado(id)) {
+            alert(
+                `A Ordem de Serviço Nº ${id} já existe no histórico.\n\n` +
+                'Defina outro número antes de gerar o PDF.'
+            );
+
+            return;
+        }
     }
 
     const doc = new jsPDF({
@@ -418,6 +462,10 @@ function gerarPDF() {
     adicionarRodapes(doc);
 
     doc.save(`Ordem de Serviço ${id} - ${data}.pdf`);
+
+    if (reemissao) {
+        return;
+    }
 
     salvarUltimoNumero(id);
 

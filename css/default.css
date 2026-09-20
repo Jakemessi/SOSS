@@ -133,7 +133,7 @@ button:focus-visible {
 
 table {
     width: 100%;
-    min-width: 620px;
+    min-width: 720px;
     border-collapse: collapse;
 }
 
@@ -157,6 +157,16 @@ tbody tr:hover {
 
 tbody tr:last-child td {
     border-bottom: 0;
+}
+
+.botao-secundario {
+    padding: 8px 10px;
+    background-color: #4b5563;
+    white-space: nowrap;
+}
+
+.botao-secundario:hover {
+    background-color: #374151;
 }
 
 @media (max-width: 600px) {

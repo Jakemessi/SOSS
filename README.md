@@ -16,6 +16,7 @@ O SOSS funciona diretamente no navegador e foi preparado para utilização offli
 - Funcionamento sem conexão com a internet.
 - Exportação e importação de backup da numeração e do histórico.
 - Registro local das Ordens de Serviço geradas.
+- Emissão de segunda via das ordens registradas no histórico.
 
 ## Como executar
 
@@ -58,6 +59,8 @@ Cada Ordem de Serviço gerada é registrada no navegador com número, data, mode
 A tabela apresenta as ordens já registradas e impede a criação de outro documento com o mesmo número.
 
 O histórico permanece neste navegador e também é incluído nos arquivos de backup exportados pelo SOSS.
+
+O botão **Baixar PDF** permite gerar novamente uma ordem registrada. A segunda via mantém o mesmo número e os mesmos dados, sem avançar o contador ou criar outro registro.
 
 ## Backup dos dados locais
 
