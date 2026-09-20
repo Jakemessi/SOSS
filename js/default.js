@@ -1,12 +1,160 @@
 const { jsPDF } = window.jspdf;
 
+const PDF_LAYOUT = Object.freeze({
+    margemEsquerda: 20,
+    margemDireita: 190,
+    larguraUtil: 170,
+    limiteInferior: 268,
+    alturaLinha: 6
+});
+
+function formatarData(dataISO) {
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function adicionarCabecalhoPrincipal(doc, id, data) {
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('Ordem de Serviço Simplificada', PDF_LAYOUT.margemEsquerda, 20);
+
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Nº: ${id}`, PDF_LAYOUT.margemDireita, 20, { align: 'right' });
+    doc.text(
+        `Data: ${formatarData(data)}`,
+        PDF_LAYOUT.margemDireita,
+        26,
+        { align: 'right' }
+    );
+
+    doc.line(
+        PDF_LAYOUT.margemEsquerda,
+        30,
+        PDF_LAYOUT.margemDireita,
+        30
+    );
+}
+
+function adicionarCabecalhoContinuacao(doc, id) {
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(
+        `Ordem de Serviço Nº ${id} — continuação`,
+        PDF_LAYOUT.margemEsquerda,
+        20
+    );
+
+    doc.line(
+        PDF_LAYOUT.margemEsquerda,
+        26,
+        PDF_LAYOUT.margemDireita,
+        26
+    );
+}
+
+function garantirEspaco(doc, y, alturaNecessaria, id) {
+    if (y + alturaNecessaria <= PDF_LAYOUT.limiteInferior) {
+        return y;
+    }
+
+    doc.addPage();
+    adicionarCabecalhoContinuacao(doc, id);
+
+    return 38;
+}
+
+function escreverCampo(doc, rotulo, valor, y, id) {
+    const xRotulo = PDF_LAYOUT.margemEsquerda;
+    const xValor = 43;
+    const larguraValor = PDF_LAYOUT.margemDireita - xValor;
+    const linhas = doc.splitTextToSize(valor, larguraValor);
+
+    y = garantirEspaco(doc, y, PDF_LAYOUT.alturaLinha, id);
+
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(rotulo, xRotulo, y);
+
+    linhas.forEach((linha, indice) => {
+        if (indice > 0) {
+            y = garantirEspaco(
+                doc,
+                y,
+                PDF_LAYOUT.alturaLinha,
+                id
+            );
+        }
+
+        doc.setFont(undefined, 'normal');
+        doc.text(linha, xValor, y);
+        y += PDF_LAYOUT.alturaLinha;
+    });
+
+    return y + 2;
+}
+
+function escreverLinhasPaginadas(doc, linhas, y, id, estilo = 'normal') {
+    linhas.forEach((linha) => {
+        y = garantirEspaco(
+            doc,
+            y,
+            PDF_LAYOUT.alturaLinha,
+            id
+        );
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, estilo);
+        doc.text(linha || ' ', PDF_LAYOUT.margemEsquerda, y);
+
+        y += PDF_LAYOUT.alturaLinha;
+    });
+
+    return y;
+}
+
+function adicionarRodapes(doc) {
+    const totalPaginas = doc.getNumberOfPages();
+
+    for (let pagina = 1; pagina <= totalPaginas; pagina += 1) {
+        doc.setPage(pagina);
+
+        doc.setDrawColor(150);
+        doc.line(
+            PDF_LAYOUT.margemEsquerda,
+            276,
+            PDF_LAYOUT.margemDireita,
+            276
+        );
+
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(80);
+
+        doc.text(
+            'Documento gerado automaticamente pelo SOSS',
+            PDF_LAYOUT.margemEsquerda,
+            283
+        );
+
+        doc.text(
+            `Página ${pagina} de ${totalPaginas}`,
+            PDF_LAYOUT.margemDireita,
+            283,
+            { align: 'right' }
+        );
+    }
+
+    doc.setTextColor(0);
+}
+
 function gerarPDF() {
-    const modelo = document.getElementById('modelo').value;
-    const codigo = document.getElementById('codigo').value;
-    const setor = document.getElementById('setor').value;
+    const modelo = document.getElementById('modelo').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
+    const setor = document.getElementById('setor').value.trim();
     const data = document.getElementById('data').value;
-    const acao = document.getElementById('acao').value;
-    const desc = document.getElementById('desc').value;
+    const acao = document.getElementById('acao').value.trim();
+    const desc = document.getElementById('desc').value.trim();
 
     if (!modelo || !codigo || !setor || !data || !acao || !desc) {
         alert('Preencha todos os campos!');
@@ -14,89 +162,100 @@ function gerarPDF() {
     }
 
     let id = localStorage.getItem('id');
-    id = id ? parseInt(id) + 1 : 1;
+    id = id ? parseInt(id, 10) + 1 : 1;
     localStorage.setItem('id', id);
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
 
-    // CABEÇALHO
-    doc.setFontSize(18);
-    doc.text('Ordem de Serviço Simplificada', 20, 20);
+    doc.setProperties({
+        title: `Ordem de Serviço ${id}`,
+        subject: acao,
+        author: 'SOSS',
+        creator: 'SOSS'
+    });
 
-    doc.setFontSize(10);
-    doc.text(`Nº: ${id}`, 160, 20);
-    doc.text(`Data: ${data}`, 160, 26);
+    adicionarCabecalhoPrincipal(doc, id, data);
 
-    doc.line(20, 30, 190, 30);
-
-    // SERVIÇO
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
-    doc.text('DADOS DO SERVIÇO', 20, 45);
+    doc.text(
+        'DADOS DO SERVIÇO',
+        PDF_LAYOUT.margemEsquerda,
+        45
+    );
 
-    doc.line(20, 50, 190, 50);
+    doc.line(
+        PDF_LAYOUT.margemEsquerda,
+        50,
+        PDF_LAYOUT.margemDireita,
+        50
+    );
 
-    doc.setFontSize(11);
+    let y = 62;
 
-    //Posições
-    const xRotulo = 20;
-    const xValor = 40;
-    doc.setFont(undefined, 'bold');
-    doc.text('Modelo:', xRotulo, 60);
-    doc.setFont(undefined, 'normal');
-    doc.text(modelo, xValor, 60);
+    y = escreverCampo(doc, 'Modelo:', modelo, y, id);
+    y = escreverCampo(doc, 'Código:', codigo, y, id);
+    y = escreverCampo(doc, 'Setor:', setor, y, id);
 
-    doc.setFont(undefined, 'bold');
-    doc.text('Codigo:', xRotulo, 70);
-    doc.setFont(undefined, 'normal');
-    doc.text(codigo, xValor, 70);
+    y = garantirEspaco(doc, y, 22, id);
 
-    doc.setFont(undefined, 'bold');
-    doc.text('Setor:', xRotulo, 80);
-    doc.setFont(undefined, 'normal');
-    doc.text(setor, xValor, 80);
+    doc.line(
+        PDF_LAYOUT.margemEsquerda,
+        y,
+        PDF_LAYOUT.margemDireita,
+        y
+    );
 
-    // LINHA
-    doc.line(20, 90, 190, 90);
+    y += 15;
 
-    // TÍTULO
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
-    doc.text('DESCRIÇÃO', 20, 105);
+    doc.text('DESCRIÇÃO', PDF_LAYOUT.margemEsquerda, y);
 
-    doc.line(20, 110, 190, 110);
+    y += 5;
 
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
+    doc.line(
+        PDF_LAYOUT.margemEsquerda,
+        y,
+        PDF_LAYOUT.margemDireita,
+        y
+    );
 
-    // AÇÃO
-    doc.setFont(undefined, 'bold');
-    const yAcao = 120;
-    doc.text(acao, 20, yAcao);
-    doc.setFont(undefined, 'normal');
+    y += 12;
 
-    // DESCRIÇÃO (multilinha)
-    const yDescricao = 130;
-    const linhasDesc = doc.splitTextToSize(desc, 120);
-    doc.text(linhasDesc, 20, yDescricao);
+    const linhasAcao = doc.splitTextToSize(
+        acao,
+        PDF_LAYOUT.larguraUtil
+    );
 
-    // Pega a altura do texto escrito
-    const alturaReal = doc.getTextDimensions(linhasDesc).h;
+    y = escreverLinhasPaginadas(
+        doc,
+        linhasAcao,
+        y,
+        id,
+        'bold'
+    );
 
-    // Espaçamento para linha depois da descrição, favor não mexer muito volátil
-    const espacamento = 2;
+    y += 4;
 
-    // Posição final da linha depois da descrição
-    const yFinal = yDescricao + alturaReal + espacamento;
+    const linhasDescricao = doc.splitTextToSize(
+        desc,
+        PDF_LAYOUT.larguraUtil
+    );
 
-    // Insere a linha depois da descrição
-    doc.line(20, yFinal, 190, yFinal);
+    escreverLinhasPaginadas(
+        doc,
+        linhasDescricao,
+        y,
+        id
+    );
 
-    // RODAPÉ
-    doc.setFontSize(9);
-    doc.text('Documento gerado automaticamente', 20, 280);
+    adicionarRodapes(doc);
 
-    // SALVAR
     doc.save(`Ordem de Serviço ${id} - ${data}.pdf`);
 }
 
@@ -108,11 +267,13 @@ function resetarContador() {
 }
 
 function definirProximoId() {
-    const novoId = prompt('Digite o número da OS atual:');
+    const novoId = prompt('Digite o número da próxima OS:');
 
-    if (novoId === null) return;
+    if (novoId === null) {
+        return;
+    }
 
-    const numero = parseInt(novoId);
+    const numero = parseInt(novoId, 10);
 
     if (isNaN(numero) || numero <= 0) {
         alert('Digite um número válido!');
@@ -120,5 +281,5 @@ function definirProximoId() {
     }
 
     localStorage.setItem('id', numero - 1);
-    alert(`O número da OS será ${numero}`);
+    alert(`O número da próxima OS será ${numero}.`);
 }
