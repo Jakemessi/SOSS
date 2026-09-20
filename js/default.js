@@ -9,6 +9,7 @@ const PDF_LAYOUT = Object.freeze({
 });
 
 const CHAVE_CONTADOR = 'soss.ultimoNumero';
+const CHAVE_HISTORICO = 'soss.historico';
 
 function obterUltimoNumero() {
     const valorAtual = localStorage.getItem(CHAVE_CONTADOR);
@@ -45,6 +46,120 @@ function atualizarIndicadorProximaOS() {
         indicador.textContent =
             `Próxima Ordem de Serviço: Nº ${obterUltimoNumero() + 1}`;
     }
+}
+
+function validarRegistroOrdem(ordem) {
+    const camposTexto = [
+        'modelo',
+        'codigo',
+        'setor',
+        'data',
+        'resumo',
+        'descricao',
+        'geradaEm'
+    ];
+
+    return (
+        ordem !== null &&
+        typeof ordem === 'object' &&
+        Number.isSafeInteger(ordem.numero) &&
+        ordem.numero > 0 &&
+        camposTexto.every((campo) => typeof ordem[campo] === 'string')
+    );
+}
+
+function obterHistorico() {
+    const conteudo = localStorage.getItem(CHAVE_HISTORICO);
+
+    if (conteudo === null) {
+        return [];
+    }
+
+    try {
+        const historico = JSON.parse(conteudo);
+
+        if (!Array.isArray(historico)) {
+            throw new Error('O histórico salvo não é uma lista.');
+        }
+
+        return historico.filter(validarRegistroOrdem);
+    } catch (erro) {
+        console.error('Erro ao carregar histórico:', erro);
+        return [];
+    }
+}
+
+function salvarHistorico(historico) {
+    localStorage.setItem(
+        CHAVE_HISTORICO,
+        JSON.stringify(historico)
+    );
+}
+
+function numeroJaRegistrado(numero) {
+    return obterHistorico().some(
+        (ordem) => ordem.numero === numero
+    );
+}
+
+function registrarOrdem(ordem) {
+    const historico = obterHistorico();
+
+    if (historico.some((item) => item.numero === ordem.numero)) {
+        throw new Error(
+            `A Ordem de Serviço Nº ${ordem.numero} já está registrada.`
+        );
+    }
+
+    historico.unshift(ordem);
+    salvarHistorico(historico);
+}
+
+function criarCelula(texto) {
+    const celula = document.createElement('td');
+    celula.textContent = texto;
+
+    return celula;
+}
+
+function atualizarHistorico() {
+    const historico = obterHistorico()
+        .sort((ordemA, ordemB) => ordemB.numero - ordemA.numero);
+
+    const totalOrdens = document.getElementById('total-ordens');
+    const mensagemVazia = document.getElementById('historico-vazio');
+    const tabela = document.getElementById('tabela-historico');
+    const corpo = document.getElementById('corpo-historico');
+
+    const quantidade = historico.length;
+
+    totalOrdens.textContent =
+        quantidade === 1
+            ? '1 ordem registrada'
+            : `${quantidade} ordens registradas`;
+
+    mensagemVazia.hidden = quantidade > 0;
+    tabela.hidden = quantidade === 0;
+
+    corpo.replaceChildren();
+
+    const linhas = document.createDocumentFragment();
+
+    historico.forEach((ordem) => {
+        const linha = document.createElement('tr');
+
+        linha.append(
+            criarCelula(ordem.numero),
+            criarCelula(formatarData(ordem.data)),
+            criarCelula(ordem.modelo),
+            criarCelula(ordem.codigo),
+            criarCelula(ordem.setor)
+        );
+
+        linhas.appendChild(linha);
+    });
+
+    corpo.appendChild(linhas);
 }
 
 function formatarData(dataISO) {
@@ -202,6 +317,15 @@ function gerarPDF() {
 
     const id = obterUltimoNumero() + 1;
 
+    if (numeroJaRegistrado(id)) {
+        alert(
+            `A Ordem de Serviço Nº ${id} já existe no histórico.\n\n` +
+            'Defina outro número antes de gerar o PDF.'
+        );
+
+        return;
+    }
+
     const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -296,6 +420,31 @@ function gerarPDF() {
     doc.save(`Ordem de Serviço ${id} - ${data}.pdf`);
 
     salvarUltimoNumero(id);
+
+    try {
+        registrarOrdem({
+            numero: id,
+            modelo,
+            codigo,
+            setor,
+            data,
+            resumo: acao,
+            descricao: desc,
+            geradaEm: new Date().toISOString()
+        });
+    } catch (erro) {
+        console.error('Erro ao registrar a OS no histórico:', erro);
+
+        alert(
+            `O PDF da OS Nº ${id} foi gerado, mas não foi possível ` +
+            'registrá-lo no histórico local.'
+        );
+    }
+
+    atualizarIndicadorProximaOS();
+    atualizarHistorico();
+
+    salvarUltimoNumero(id);
     atualizarIndicadorProximaOS();
 }
 
@@ -323,6 +472,15 @@ function definirProximoId() {
 
     if (!Number.isSafeInteger(numero) || numero <= 0) {
         alert('Digite um número inteiro maior que zero!');
+        return;
+    }
+
+    if (numeroJaRegistrado(numero)) {
+        alert(
+            `A Ordem de Serviço Nº ${numero} já existe no histórico.\n\n` +
+            'Escolha outro número.'
+        );
+
         return;
     }
 
@@ -460,3 +618,4 @@ document
     .addEventListener('change', importarBackup);
 
 atualizarIndicadorProximaOS();
+atualizarHistorico();

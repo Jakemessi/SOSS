@@ -36,7 +36,6 @@
             type="text"
             id="acao"
             placeholder="Ação (ex: Manutenção preventiva)"
-            style="width: 30%;"
         ><br><br>
 
         <label for="desc">Descrição:</label><br>
@@ -44,12 +43,11 @@
             id="desc"
             placeholder="Descrição do serviço"
             rows="10"
-            style="width: 70%; margin-bottom: 10px; padding: 5px;"
         ></textarea><br>
 
         <p id="proxima-os" aria-live="polite"></p>
 
-        <div style="display: flex; justify-content: center; align-items: center; gap: 1%;">
+        <div class="acoes">
             <button
                 type="button"
                 onclick="definirProximoId()"
@@ -69,6 +67,33 @@
             accept=".json,application/json"
             hidden
         >
+
+        <section id="historico-local" aria-labelledby="titulo-historico">
+            <div class="cabecalho-historico">
+                <h3 id="titulo-historico">Histórico local</h3>
+                <span id="total-ordens">0 ordens registradas</span>
+            </div>
+
+            <p id="historico-vazio">
+                Nenhuma Ordem de Serviço foi registrada neste navegador.
+            </p>
+
+            <div id="tabela-historico" class="tabela-historico" hidden>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Data</th>
+                            <th>Modelo</th>
+                            <th>Código</th>
+                            <th>Setor</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="corpo-historico"></tbody>
+                </table>
+            </div>
+        </section>
     </main>
 </body>
 </html>

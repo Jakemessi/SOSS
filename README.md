@@ -15,6 +15,7 @@ O SOSS funciona diretamente no navegador e foi preparado para utilização offli
 - Cabeçalho e rodapé em todas as páginas.
 - Funcionamento sem conexão com a internet.
 - Exportação e importação de backup da numeração.
+- Registro local das Ordens de Serviço geradas.
 
 ## Como executar
 
@@ -50,6 +51,14 @@ O botão **Definir próximo Nº** permite escolher manualmente o número da pró
 
 Ao escolher um número inferior ou igual ao último utilizado, o sistema apresenta um aviso sobre o risco de duplicidade.
 
+## Histórico local
+
+Cada Ordem de Serviço gerada é registrada no navegador com número, data, modelo, código, setor, resumo e descrição.
+
+A tabela apresenta as ordens já registradas e impede a criação de outro documento com o mesmo número.
+
+O histórico permanece somente neste navegador. Nesta versão, ele ainda não está incluído no arquivo de backup.
+
 ## Backup da numeração
 
 O botão **Exportar backup** cria um arquivo JSON contendo o último número utilizado pelo SOSS.
@@ -67,6 +76,7 @@ O backup atual protege somente a numeração. Os PDFs gerados devem ser armazena
 - Outro navegador terá um contador separado.
 - Para transferir a numeração a outro computador, utilize a exportação e importação de backup.
 - O suporte simultâneo a vários computadores será implementado em uma etapa futura.
+- Limpar os dados do navegador também apaga o histórico local.
 
 ## Dependência incluída
 
