@@ -10,6 +10,130 @@ const PDF_LAYOUT = Object.freeze({
 
 const CHAVE_CONTADOR = 'soss.ultimoNumero';
 const CHAVE_HISTORICO = 'soss.historico';
+const CHAVE_RASCUNHO = 'soss.rascunho';
+
+const CAMPOS_RASCUNHO = Object.freeze([
+    'modelo',
+    'codigo',
+    'setor',
+    'data',
+    'acao',
+    'desc'
+]);
+
+function obterCamposRascunho() {
+    return CAMPOS_RASCUNHO
+        .map((id) => document.getElementById(id))
+        .filter((campo) => campo !== null);
+}
+
+function salvarRascunho() {
+    const rascunho = {};
+
+    obterCamposRascunho().forEach((campo) => {
+        rascunho[campo.id] = campo.value;
+    });
+
+    const possuiConteudo = Object.values(rascunho).some(
+        (valor) => valor.trim() !== ''
+    );
+
+    try {
+        if (possuiConteudo) {
+            localStorage.setItem(
+                CHAVE_RASCUNHO,
+                JSON.stringify(rascunho)
+            );
+        } else {
+            localStorage.removeItem(CHAVE_RASCUNHO);
+        }
+    } catch (erro) {
+        console.error('Não foi possível salvar o rascunho:', erro);
+    }
+}
+
+function removerRascunho() {
+    try {
+        localStorage.removeItem(CHAVE_RASCUNHO);
+    } catch (erro) {
+        console.error('Não foi possível remover o rascunho:', erro);
+    }
+}
+
+function restaurarRascunho() {
+    let conteudo;
+
+    try {
+        conteudo = localStorage.getItem(CHAVE_RASCUNHO);
+    } catch (erro) {
+        console.error('Não foi possível acessar o rascunho:', erro);
+        return;
+    }
+
+    if (conteudo === null) {
+        return;
+    }
+
+    try {
+        const rascunho = JSON.parse(conteudo);
+
+        if (
+            rascunho === null ||
+            typeof rascunho !== 'object' ||
+            Array.isArray(rascunho)
+        ) {
+            throw new Error('Formato de rascunho inválido.');
+        }
+
+        obterCamposRascunho().forEach((campo) => {
+            const valorSalvo = rascunho[campo.id];
+
+            if (typeof valorSalvo === 'string') {
+                campo.value = valorSalvo;
+            }
+        });
+    } catch (erro) {
+        console.warn('O rascunho salvo era inválido e foi removido:', erro);
+        removerRascunho();
+    }
+}
+
+function limparCamposFormulario() {
+    obterCamposRascunho().forEach((campo) => {
+        campo.value = '';
+    });
+
+    removerRascunho();
+}
+
+function limparFormulario() {
+    const campos = obterCamposRascunho();
+    const possuiConteudo = campos.some(
+        (campo) => campo.value.trim() !== ''
+    );
+
+    if (
+        possuiConteudo &&
+        !confirm(
+            'Limpar todos os campos preenchidos?\n\n' +
+            'A numeração e o histórico não serão alterados.'
+        )
+    ) {
+        return;
+    }
+
+    limparCamposFormulario();
+
+    document.getElementById('modelo')?.focus();
+}
+
+function inicializarRascunho() {
+    restaurarRascunho();
+
+    obterCamposRascunho().forEach((campo) => {
+        campo.addEventListener('input', salvarRascunho);
+    });
+}
 
 function obterUltimoNumero() {
     const valorAtual = localStorage.getItem(CHAVE_CONTADOR);
@@ -480,6 +604,8 @@ function gerarPDF(ordemExistente = null) {
             descricao: desc,
             geradaEm: obterDataHoraLocalISO()
         });
+
+        limparCamposFormulario();
     } catch (erro) {
         console.error('Erro ao registrar a OS no histórico:', erro);
 
@@ -758,5 +884,6 @@ document
     .getElementById('arquivo-backup')
     .addEventListener('change', importarBackup);
 
+inicializarRascunho();
 atualizarIndicadorProximaOS();
 atualizarHistorico();

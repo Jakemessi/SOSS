@@ -17,6 +17,8 @@ O SOSS funciona diretamente no navegador e foi preparado para utilização offli
 - Exportação e importação de backup da numeração e do histórico.
 - Registro local das Ordens de Serviço geradas.
 - Emissão de segunda via das ordens registradas no histórico.
+- Salvamento automático do formulário como rascunho local.
+- Limpeza do formulário sem alterar a numeração ou o histórico.
 
 ## Como executar
 
@@ -41,6 +43,7 @@ SOSS/
 │   ├── jspdf.umd.min.js
 │   └── LICENSE.jspdf.txt
 ├── index.html
+├── LICENSE
 └── README.md
 ```
 
@@ -51,6 +54,14 @@ O último número utilizado fica armazenado no navegador do computador.
 O botão **Definir próximo Nº** permite escolher manualmente o número da próxima Ordem de Serviço.
 
 Ao escolher um número inferior ou igual ao último utilizado, o sistema apresenta um aviso sobre o risco de duplicidade.
+
+## Rascunho automático
+
+Enquanto uma Ordem de Serviço é preenchida, os campos são salvos automaticamente neste navegador.
+
+O rascunho é removido após a geração bem-sucedida da OS ou ao utilizar o botão **Limpar formulário**. A limpeza não altera a numeração nem o histórico.
+
+O rascunho atual não é incluído nos arquivos de backup.
 
 ## Histórico local
 
@@ -78,10 +89,10 @@ Os PDFs gerados não ficam dentro do backup e devem ser armazenados e copiados s
 
 - Utilize sempre o mesmo navegador.
 - Não limpe os dados do navegador sem possuir um backup atualizado.
-- Outro navegador terá um contador separado.
-- Para transferir a numeração a outro computador, utilize a exportação e importação de backup.
+- Outro navegador terá um contador, histórico e rascunho separados.
+- Para transferir a numeração e o histórico a outro computador, utilize a exportação e importação de backup.
 - O suporte simultâneo a vários computadores será implementado em uma etapa futura.
-- Limpar os dados do navegador também apaga o histórico local.
+- Limpar os dados do navegador também apaga a numeração, o histórico e o rascunho local.
 
 ## Dependência incluída
 
