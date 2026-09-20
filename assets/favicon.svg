@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="12" fill="#1b1b1b"/>
+    <path d="M16 8h26l10 10v38H16z" fill="#ffffff"/>
+    <path d="M42 8v12h10" fill="#bfdbfe"/>
+    <text
+        x="34"
+        y="45"
+        text-anchor="middle"
+        font-family="Arial, sans-serif"
+        font-size="17"
+        font-weight="700"
+        fill="#1d4ed8"
+    >OS</text>
+</svg>
