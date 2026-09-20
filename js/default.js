@@ -430,7 +430,7 @@ function gerarPDF() {
             data,
             resumo: acao,
             descricao: desc,
-            geradaEm: new Date().toISOString()
+            geradaEm: obterDataHoraLocalISO()
         });
     } catch (erro) {
         console.error('Erro ao registrar a OS no histórico:', erro);
@@ -502,9 +502,36 @@ function definirProximoId() {
     alert(`A próxima Ordem de Serviço será a Nº ${numero}.`);
 }
 
+function completarComZero(valor) {
+    return String(valor).padStart(2, '0');
+}
+
+function obterDataHoraLocalISO(data = new Date()) {
+    const ano = data.getFullYear();
+    const mes = completarComZero(data.getMonth() + 1);
+    const dia = completarComZero(data.getDate());
+    const hora = completarComZero(data.getHours());
+    const minuto = completarComZero(data.getMinutes());
+    const segundo = completarComZero(data.getSeconds());
+
+    const deslocamentoTotal = -data.getTimezoneOffset();
+    const sinalFuso = deslocamentoTotal >= 0 ? '+' : '-';
+    const deslocamentoAbsoluto = Math.abs(deslocamentoTotal);
+    const horasFuso = completarComZero(
+        Math.floor(deslocamentoAbsoluto / 60)
+    );
+    const minutosFuso = completarComZero(
+        deslocamentoAbsoluto % 60
+    );
+
+    return (
+        `${ano}-${mes}-${dia}T${hora}:${minuto}:${segundo}` +
+        `${sinalFuso}${horasFuso}:${minutosFuso}`
+    );
+}
+
 function criarNomeArquivoBackup() {
-    const dataHora = new Date()
-        .toISOString()
+    const dataHora = obterDataHoraLocalISO()
         .slice(0, 19)
         .replace('T', '_')
         .replace(/:/g, '-');
@@ -516,7 +543,7 @@ function exportarBackup() {
     const backup = {
         aplicacao: 'SOSS',
         versao: 1,
-        exportadoEm: new Date().toISOString(),
+        exportadoEm: obterDataHoraLocalISO(),
         ultimoNumero: obterUltimoNumero()
     };
 
