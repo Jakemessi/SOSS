@@ -3,40 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="author" content="Huehuller Glehyson da Silva Veine">
+    <meta name="description" content="Sistema de Ordem de Serviço Simplificada">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://kadeshepi.com.br/wp-content/uploads/2025/08/cropped-favicon-32x32.png">
-    <title>SOMP</title>
-    <link rel="stylesheet" href="css/default.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script type="text/javascript" src="js/default.js" id="main"></script>
-</head>
-    <div id="principal" class="centralizar">
-        <h2 style="margin:0; margin-bottom: 10px;">Ordem de Serviço</h2>
 
-        <label>Modelo</label><br>
+    <link rel="icon" href="https://kadeshepi.com.br/wp-content/uploads/2025/08/cropped-favicon-32x32.png">
+    <link rel="stylesheet" href="css/default.css">
+
+    <title>SOSS — Sistema de Ordem de Serviço Simplificada</title>
+
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="js/default.js"></script>
+</head>
+
+<body>
+    <main id="principal" class="centralizar">
+        <h2 style="margin: 0; margin-bottom: 10px;">Ordem de Serviço</h2>
+
+        <label for="modelo">Modelo</label><br>
         <input type="text" id="modelo" placeholder="Bomba 50cc"><br><br>
 
-        <label>Codigo</label><br>
+        <label for="codigo">Código</label><br>
         <input type="text" id="codigo" placeholder="Tom-447"><br><br>
 
-        <label>Setor</label><br>
+        <label for="setor">Setor</label><br>
         <input type="text" id="setor" placeholder="Imbiseg"><br><br>
 
-        <label>Data:</label><br>
+        <label for="data">Data:</label><br>
         <input type="date" id="data"><br><br>
 
-        <label>Resumo:</label><br>
-        <input style="width: 30%;" type="text" id="acao" placeholder="Ação (ex: Manutenção preventiva)"><br><br>
+        <label for="acao">Resumo:</label><br>
+        <input
+            type="text"
+            id="acao"
+            placeholder="Ação (ex: Manutenção preventiva)"
+            style="width: 30%;"
+        ><br><br>
 
-        <label>Descrição:</label><br>
-        <textarea id="desc" placeholder="Descrição do serviço" rows="10" style="width:70%; margin-bottom:10px; padding:5px;"></textarea><br>
-        <div style="display: flex; justify-content: center; align-items: center;gap: 1%;">
-            <button onclick="definirProximoId()" title="Define manualmente o próximo número da OS">Definir Nº</button>
-            <button onclick="gerarPDF()">Gerar PDF</button>
-            <button onclick="resetarContador()">Resetar Contador</button>
+        <label for="desc">Descrição:</label><br>
+        <textarea
+            id="desc"
+            placeholder="Descrição do serviço"
+            rows="10"
+            style="width: 70%; margin-bottom: 10px; padding: 5px;"
+        ></textarea><br>
+
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1%;">
+            <button
+                type="button"
+                onclick="definirProximoId()"
+                title="Define manualmente o próximo número da OS"
+            >
+                Definir Nº
+            </button>
+
+            <button type="button" onclick="gerarPDF()">Gerar PDF</button>
+            <button type="button" onclick="resetarContador()">Resetar Contador</button>
         </div>
-    </div>
-<body>
+    </main>
 </body>
-
 </html>
