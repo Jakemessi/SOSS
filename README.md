@@ -89,6 +89,14 @@ O projeto utiliza o jsPDF 2.5.1 para gerar os documentos.
 
 A biblioteca está armazenada localmente em `vendor/`, permitindo o funcionamento offline. Sua licença MIT está disponível em `vendor/LICENSE.jspdf.txt`.
 
+## Autoria e licença
+
+Desenvolvido por **Huehuller**.
+
+O SOSS é distribuído sob a Licença MIT. Quem utilizar, modificar ou redistribuir o código deve manter o aviso de direitos autorais e o arquivo `LICENSE`.
+
+A licença da dependência jsPDF está disponível separadamente em `vendor/LICENSE.jspdf.txt`.
+
 ## Estado atual
 
 Esta versão foi projetada para utilização offline em um único computador.

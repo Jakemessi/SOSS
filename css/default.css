@@ -169,6 +169,15 @@ tbody tr:last-child td {
     background-color: #374151;
 }
 
+.credito-autoria {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #d1d5db;
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
 @media (max-width: 600px) {
     body {
         padding: 12px;
