@@ -344,4 +344,119 @@ function definirProximoId() {
     alert(`A próxima Ordem de Serviço será a Nº ${numero}.`);
 }
 
+function criarNomeArquivoBackup() {
+    const dataHora = new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', '_')
+        .replace(/:/g, '-');
+
+    return `Backup SOSS - ${dataHora}.json`;
+}
+
+function exportarBackup() {
+    const backup = {
+        aplicacao: 'SOSS',
+        versao: 1,
+        exportadoEm: new Date().toISOString(),
+        ultimoNumero: obterUltimoNumero()
+    };
+
+    const conteudo = JSON.stringify(backup, null, 4);
+
+    const arquivo = new Blob(
+        [conteudo],
+        { type: 'application/json;charset=utf-8' }
+    );
+
+    const enderecoTemporario = URL.createObjectURL(arquivo);
+    const link = document.createElement('a');
+
+    link.href = enderecoTemporario;
+    link.download = criarNomeArquivoBackup();
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+        URL.revokeObjectURL(enderecoTemporario);
+    }, 1000);
+}
+
+function selecionarBackup() {
+    const seletor = document.getElementById('arquivo-backup');
+
+    seletor.value = '';
+    seletor.click();
+}
+
+function validarBackup(backup) {
+    return (
+        backup !== null &&
+        typeof backup === 'object' &&
+        backup.aplicacao === 'SOSS' &&
+        backup.versao === 1 &&
+        Number.isSafeInteger(backup.ultimoNumero) &&
+        backup.ultimoNumero >= 0
+    );
+}
+
+async function importarBackup(evento) {
+    const arquivo = evento.target.files[0];
+
+    if (!arquivo) {
+        return;
+    }
+
+    try {
+        const conteudo = await arquivo.text();
+        const backup = JSON.parse(conteudo);
+
+        if (!validarBackup(backup)) {
+            throw new Error('Estrutura de backup inválida.');
+        }
+
+        const ultimoNumeroAtual = obterUltimoNumero();
+        const proximoNumeroBackup = backup.ultimoNumero + 1;
+
+        let mensagem =
+            `O backup possui como última OS a Nº ${backup.ultimoNumero}.\n` +
+            `Após a importação, a próxima será a Nº ${proximoNumeroBackup}.\n\n`;
+
+        if (backup.ultimoNumero < ultimoNumeroAtual) {
+            mensagem +=
+                `A numeração atual está na OS Nº ${ultimoNumeroAtual}.\n` +
+                'Importar este backup pode provocar números repetidos.\n\n';
+        }
+
+        mensagem += 'Deseja importar este backup?';
+
+        if (!confirm(mensagem)) {
+            return;
+        }
+
+        salvarUltimoNumero(backup.ultimoNumero);
+        atualizarIndicadorProximaOS();
+
+        alert(
+            `Backup importado com sucesso!\n` +
+            `A próxima Ordem de Serviço será a Nº ${proximoNumeroBackup}.`
+        );
+    } catch (erro) {
+        console.error('Erro ao importar backup:', erro);
+
+        alert(
+            'Não foi possível importar o backup. ' +
+            'Verifique se o arquivo pertence ao SOSS e não foi alterado.'
+        );
+    } finally {
+        evento.target.value = '';
+    }
+}
+
+document
+    .getElementById('arquivo-backup')
+    .addEventListener('change', importarBackup);
+
 atualizarIndicadorProximaOS();

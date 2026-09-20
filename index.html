@@ -59,7 +59,16 @@
             </button>
 
             <button type="button" onclick="gerarPDF()">Gerar PDF</button>
+            <button type="button" onclick="exportarBackup()">Exportar backup</button>
+            <button type="button" onclick="selecionarBackup()">Importar backup</button>
         </div>
+
+        <input
+            type="file"
+            id="arquivo-backup"
+            accept=".json,application/json"
+            hidden
+        >
     </main>
 </body>
 </html>
