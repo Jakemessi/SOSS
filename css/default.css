@@ -20,3 +20,9 @@ html,body{
 .centralizar{
     text-align: center;
 }
+
+#proxima-os {
+    margin: 4px 0 14px;
+    color: #333333;
+    font-weight: 700;
+}

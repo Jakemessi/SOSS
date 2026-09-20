@@ -8,6 +8,45 @@ const PDF_LAYOUT = Object.freeze({
     alturaLinha: 6
 });
 
+const CHAVE_CONTADOR = 'soss.ultimoNumero';
+
+function obterUltimoNumero() {
+    const valorAtual = localStorage.getItem(CHAVE_CONTADOR);
+    const valorAntigo = localStorage.getItem('id');
+    const valorSalvo = valorAtual ?? valorAntigo;
+
+    if (valorSalvo === null) {
+        return 0;
+    }
+
+    const numero = Number(valorSalvo);
+
+    if (!Number.isSafeInteger(numero) || numero < 0) {
+        return 0;
+    }
+
+    // Migra automaticamente o contador antigo para a nova chave.
+    if (valorAtual === null) {
+        localStorage.setItem(CHAVE_CONTADOR, String(numero));
+        localStorage.removeItem('id');
+    }
+
+    return numero;
+}
+
+function salvarUltimoNumero(numero) {
+    localStorage.setItem(CHAVE_CONTADOR, String(numero));
+}
+
+function atualizarIndicadorProximaOS() {
+    const indicador = document.getElementById('proxima-os');
+
+    if (indicador) {
+        indicador.textContent =
+            `Próxima Ordem de Serviço: Nº ${obterUltimoNumero() + 1}`;
+    }
+}
+
 function formatarData(dataISO) {
     const [ano, mes, dia] = dataISO.split('-');
     return `${dia}/${mes}/${ano}`;
@@ -161,9 +200,7 @@ function gerarPDF() {
         return;
     }
 
-    let id = localStorage.getItem('id');
-    id = id ? parseInt(id, 10) + 1 : 1;
-    localStorage.setItem('id', id);
+    const id = obterUltimoNumero() + 1;
 
     const doc = new jsPDF({
         orientation: 'portrait',
@@ -257,29 +294,54 @@ function gerarPDF() {
     adicionarRodapes(doc);
 
     doc.save(`Ordem de Serviço ${id} - ${data}.pdf`);
-}
 
-function resetarContador() {
-    if (confirm('Tem certeza que deseja resetar o contador?')) {
-        localStorage.removeItem('id');
-        alert('Contador resetado!');
-    }
+    salvarUltimoNumero(id);
+    atualizarIndicadorProximaOS();
 }
 
 function definirProximoId() {
-    const novoId = prompt('Digite o número da próxima OS:');
+    const ultimoNumero = obterUltimoNumero();
+    const proximoAtual = ultimoNumero + 1;
+
+    const novoId = prompt(
+        'Digite o número da próxima Ordem de Serviço:',
+        proximoAtual
+    );
 
     if (novoId === null) {
         return;
     }
 
-    const numero = parseInt(novoId, 10);
+    const texto = novoId.trim();
 
-    if (isNaN(numero) || numero <= 0) {
-        alert('Digite um número válido!');
+    if (!/^\d+$/.test(texto)) {
+        alert('Digite um número inteiro válido!');
         return;
     }
 
-    localStorage.setItem('id', numero - 1);
-    alert(`O número da próxima OS será ${numero}.`);
+    const numero = Number(texto);
+
+    if (!Number.isSafeInteger(numero) || numero <= 0) {
+        alert('Digite um número inteiro maior que zero!');
+        return;
+    }
+
+    if (numero <= ultimoNumero) {
+        const confirmado = confirm(
+            `A última OS registrada foi a Nº ${ultimoNumero}.\n\n` +
+            `Definir a próxima como Nº ${numero} pode gerar números repetidos.\n\n` +
+            'Deseja continuar mesmo assim?'
+        );
+
+        if (!confirmado) {
+            return;
+        }
+    }
+
+    salvarUltimoNumero(numero - 1);
+    atualizarIndicadorProximaOS();
+
+    alert(`A próxima Ordem de Serviço será a Nº ${numero}.`);
 }
+
+atualizarIndicadorProximaOS();
